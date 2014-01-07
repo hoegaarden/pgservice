@@ -1,0 +1,37 @@
+{
+  "name": "pgservice",
+  "version": "0.0.1",
+  "description": "Module for reading .pg_service.conf",
+  "main": "lib/index.js",
+  "config" : {
+    "min_coverage" : 100
+  },
+  "scripts": {
+    "pretest": "chmod 000 test/fixtures/not_readable.conf",
+    "posttest": "chmod 600 test/fixtures/not_readable.conf",
+    "test": "npm run jshint && npm run mocha && npm run coverage",
+    "jshint": "PATH=$PATH:./node_modules/jshint/bin ; jshint --verbose lib test",
+    "mocha": "PATH=$PATH:./node_modules/mocha/bin ; mocha -R list",
+    "coverage": "PATH=$PATH:./node_modules/jscoverage/bin ; rm -rf -- lib-cov && jscoverage lib lib-cov && npm run coverage_html && npm run coverage_json && npm run coverage_check",
+    "coverage_html": "PATH=$PATH:./node_modules/mocha/bin ; mocha -R html-cov > coverage.html",
+    "coverage_json": "PATH=$PATH:./node_modules/mocha/bin ; mocha -R json-cov > coverage.json",
+    "coverage_check" : "node -e \"var c=require('./coverage.json').coverage; if (c<process.argv[1]){console.log('coverage only', c);process.exit(1)}\" $npm_package_config_min_coverage"
+  },
+  "keywords": [
+    "postgres",
+    "pg",
+    "pg_service.conf",
+    "postgresql"
+  ],
+  "author": "Hannes Hörl <hannes.hoerl+pgservice@snowreporter.com>",
+  "license": "BSD-2-Clause",
+  "devDependencies": {
+    "mocha": "~1.16.2",
+    "jshint": "~2.4.1",
+    "jscoverage": "~0.3.8"
+  },
+  "dependencies": {
+    "node-ini": "~1.0.0",
+    "async": "~0.2.9"
+  }
+}
