@@ -15,7 +15,8 @@ var assert = require('assert')
   , fixSysFile = path.join(fixPath, 'pg_service.conf')
 ;
 
-describe('PgService', function(){
+
+describe('PgService (async)', function(){
 
     it('should not change conInfo if no service is defined in conInfo', function(done){
         var conInfo = {
@@ -108,4 +109,69 @@ describe('PgService', function(){
         }, env);
     });
     
+});
+
+
+
+describe('PgService (sync)', function(){
+
+    it('should not change conInfo if no service is defined in conInfo', function(){
+        var conInfo = pgService({
+            service : ''
+        });
+        assert.strictEqual(conInfo.dbname, undefined);
+    });
+
+    it('should read from the user\'s service file', function(){
+        var conInfo = pgService({
+            service : 'user'
+        }, {
+            HOME : fixPath ,
+            PGSYSCONFDIR : fixPath
+        });
+        assert.strictEqual(conInfo.dbname, 'seas');
+        assert.strictEqual(conInfo.user, 'some user');
+    });
+
+    it('should read the service file in PGSERVICEFILE', function(){
+        var conInfo = pgService({
+            service : 'user'
+        }, {
+            PGSERVICEFILE : fixUserFile ,
+            PGSYSCONFDIR : fixPath
+        });
+        assert.strictEqual(conInfo.dbname, 'seas');
+        assert.strictEqual(conInfo.user, 'some user');
+    });
+
+    it('should read the global service file as backup', function(){
+        var conInfo = pgService({
+            service : 'sys'
+        }, {
+            HOME : fixPath ,
+            PGSYSCONFDIR : fixPath
+        });
+        assert.strictEqual(conInfo.password, "me don't know");
+    });
+
+    it('should not complain if files do not exist', function(){
+        var conInfo = pgService({
+            service : 'user'
+        }, {
+            HOME : '/this should not exist' ,
+            PGSYSCONFDIR : '/should not exist either'
+        });
+        assert.strictEqual(conInfo.dbname, undefined);
+    });
+
+    it('should throw error if file is not readable', function(){
+        assert.throws(function(){
+            pgService({
+                service : 'user'
+            }, {
+                PGSERVICEFILE : path.join(fixPath, 'not_readable.conf')
+            });
+        }, Error);
+    });
+
 });
